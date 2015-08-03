@@ -1,2 +1,3 @@
-# chronos-ics
-Provide ICS files for chronos @ EPITA
+# Chronos ICS
+
+Provide ICS files for chronos @ EPITA (http://chronos.epita.net/)

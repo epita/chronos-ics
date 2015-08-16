@@ -10,7 +10,6 @@ from chronos import chronos
 
 STUDENT_PROM = 2018
 ASSISTANT_PROM = STUDENT_PROM - 2
-CHRONOS_SCRIPT = 'sudo docker run -it chronos_epita perl chronos.pl'
 CALDIR = 'calendars'
 NUMWEEKS = 80
 

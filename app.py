@@ -27,4 +27,3 @@ def send_calendar(name):
 
 if __name__ == '__main__':
     app.run(debug=True)
-__author__ = 'satreix'

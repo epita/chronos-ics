@@ -11,6 +11,7 @@ import icalendar
 
 
 ADE_ROOT = 'http://chronos.epita.net'
+PRODID = '-//Laboratoire Assistant <acu\@acu.epita.fr>//chronos.py//EN'
 ROOM_MAPPING = {}
 CLASS_MAPPING = {}
 GROUPS = {
@@ -223,47 +224,39 @@ def retrieve_week_classes(agent, first, numweeks):
         assert page.status_code == 200
 
     # Retrieve the content and parse it
-    page = agent.get("{}/ade/custom/modules/plannings/info.jsp".format(ADE_ROOT))
-    assert page.status_code == 200
+    p = agent.get("{}/ade/custom/modules/plannings/info.jsp".format(ADE_ROOT))
+    assert p.status_code == 200
 
-    return retrieve_class_list(page)
-
-
-def display_time_ical(dt=datetime.datetime.now()):
-    """
-    Display time in the iCal format
-    """
-    return dt.strftime('%Y%m%dT%H%M%S')
+    return retrieve_class_list(p)
 
 
-def ical_output(promo, group, date, classes):
+def ical_output(promo, classes):
     cal = icalendar.Calendar()
     cal.add('VERSION', '2.0')
-    cal.add('PRODID', '-//Laboratoire Assistant <acu\@acu.epita.fr>//chronos.py//EN')
+    cal.add('PRODID', PRODID)
 
     for c in classes:
         event = icalendar.Event()
-
         event_condensed_name = '{}-{}'.format(c.get('name'), c.get('prof'))
         event_condensed_name = re.sub(r"[^\w]", "_", event_condensed_name)
         event['UID'] = 'chronos-{}-{}-{}'.format(
             promo, c.get('start'), event_condensed_name).replace(' ', '_')
 
         # date the event was created (reset to now)
-        event['DTSTAMP'] = '{}'.format(display_time_ical())
-
+        event['DTSTAMP'] = icalendar.vDatetime(datetime.datetime.now())
         summary = '{}'.format(c.get('name'))
         if c.get('prof') != '-':
             summary += ' - {}'.format(c.get('prof'))
         summary += ' ({})'.format(c.get('room'))
         event['SUMMARY;CHARSET=UTF-8'] = '{}'.format(summary)
-
-        description = "Cours: {}\\nProf: {}\\nSalle: {}\\nGroupes: {}".format(
-            c.get('name'), c.get('prof'), c.get('room'),
-            '-'.join(c.get('groups')))
-        event['DESCRIPTION'] = description.replace(',', '\\,')
-        event['DTSTART;TZID=Europe/Paris'] = display_time_ical(c.get('start'))
-        event['DTEND;TZID=Europe/Paris'] = display_time_ical(c.get('end'))
+        event['DESCRIPTION'] = '\\n'.join({
+            "Cours: {}".format(c.get('name')),
+            "Prof: {}".format(c.get('prof')),
+            "Salle: {}".format(c.get('room'),
+            "Groupes: {}".format('-'.join(c.get('groups')))),
+        }).replace(',', '\\,')
+        event['DTSTART;TZID=Europe/Paris'] = icalendar.vDatetime(c.get('start'))
+        event['DTEND;TZID=Europe/Paris'] = icalendar.vDatetime(c.get('end'))
         event['LOCATION:'] = c.get('room')
         cal.add_component(event)
 
@@ -279,7 +272,7 @@ def chronos(promo, group, numweeks):
         exit(2)
     first = connect_and_select(agent, None, path)
     classes = retrieve_week_classes(agent, first, numweeks)
-    return ical_output(promo, group, None, classes)
+    return ical_output(promo, classes)
 
 
 if __name__ == '__main__':

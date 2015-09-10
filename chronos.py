@@ -11,7 +11,7 @@ import icalendar
 
 
 ADE_ROOT = 'http://chronos.epita.net'
-PRODID = '-//Laboratoire Assistant <acu\@acu.epita.fr>//chronos.py//EN'
+PRODID = '-//Laboratoire Assistant <acu@acu.epita.fr>//chronos.py//EN'
 ROOM_MAPPING = {}
 CLASS_MAPPING = {}
 GROUPS = {
@@ -257,7 +257,7 @@ def ical_output(promo, classes):
         }).replace(',', '\\,')
         event['DTSTART;TZID=Europe/Paris'] = icalendar.vDatetime(c.get('start'))
         event['DTEND;TZID=Europe/Paris'] = icalendar.vDatetime(c.get('end'))
-        event['LOCATION:'] = c.get('room')
+        event['LOCATION'] = c.get('room')
         cal.add_component(event)
 
     return cal

@@ -1,7 +1,5 @@
 beautifulsoup4==4.4.0
-Flask==0.10.1
-icalendar==3.9.0
-itsdangerous==0.24
+icalendar==3.9.1
 Jinja2==2.8
 MarkupSafe==0.23
 MechanicalSoup==0.3.1
@@ -9,4 +7,3 @@ python-dateutil==2.4.2
 pytz==2015.4
 requests==2.7.0
 six==1.9.0
-Werkzeug==0.10.4

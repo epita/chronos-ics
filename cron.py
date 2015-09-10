@@ -2,16 +2,20 @@
 
 import os
 import datetime
-import logging
 import concurrent.futures
 import time
 
 import jinja2
 
-from chronos import chronos
+import chronos
 
 
-STUDENT_PROM = 2018
+def get_year():
+    y = datetime.datetime.now().year
+    return y + 2 if datetime.datetime.now().month < 7 else y + 3
+
+
+STUDENT_PROM = get_year()
 ASSISTANT_PROM = STUDENT_PROM - 2
 OUTPUT = 'build'
 CALDIR = os.path.join(OUTPUT, 'calendars')
@@ -23,7 +27,7 @@ MAJORS = ["CSI", "MTI", "GISTRE", "SRS", "SIGL", "SCIA", "TCOM", "GITM"]
 
 def get_calendar(promo, group):
     output = '{}/{}'.format(CALDIR, group)
-    cal = chronos(promo, group, NUMWEEKS)
+    cal = chronos.chronos(promo, group, NUMWEEKS)
     with open('{}.ics'.format(output), 'wb') as out:
         out.write(cal.to_ical())
 
@@ -46,12 +50,9 @@ def update_index():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    if not os.path.isdir(OUTPUT):
-        os.mkdir(OUTPUT)
-    if not os.path.isdir(CALDIR):
-        os.mkdir(CALDIR)
-    logging.info(datetime.datetime.now().isoformat())
+    for d in [OUTPUT, CALDIR]:
+        if not os.path.isdir(d):
+            os.mkdir(d)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         for i in MAJORS:

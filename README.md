@@ -11,7 +11,3 @@ Provide ICS files for chronos @ EPITA (http://chronos.epita.net/)
 ```
 pip install -r requirements.txt
 ```
-
-## Year switch
-
-- `cron.py`, line 11

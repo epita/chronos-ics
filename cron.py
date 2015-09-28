@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python3
 
 import os
 import datetime
@@ -19,17 +19,16 @@ STUDENT_PROM = get_year()
 ASSISTANT_PROM = STUDENT_PROM - 2
 OUTPUT = 'build'
 CALDIR = os.path.join(OUTPUT, 'calendars')
-NUMWEEKS = 80
 
 GROUPS = ["GRA", "GRB", "APPING1", "APPING2", "APPING3"]
 MAJORS = ["CSI", "MTI", "GISTRE", "SRS", "SIGL", "SCIA", "TCOM", "GITM"]
 
 
 def get_calendar(promo, group):
-    output = '{}/{}'.format(CALDIR, group)
-    cal = chronos.chronos(promo, group, NUMWEEKS)
-    with open('{}.ics'.format(output), 'wb') as out:
-        out.write(cal.to_ical())
+    output = '{}/{}.ics'.format(CALDIR, group)
+    cal = chronos.chronos(promo, group)
+    with open('{}'.format(output), 'w') as out:
+        out.writelines(cal)
 
 
 def update_index():
@@ -40,16 +39,20 @@ def update_index():
         {'title': 'Groups', 'cals': GROUPS},
         {'title': 'Major', 'cals': MAJORS},
     ]
+
+    def name_and_mtime(path):
+        mtime = time.ctime(os.path.getmtime('{}/{}.ics'.format(CALDIR, path)))
+        return path, mtime
+
     for group in groups:
-        group['cals'] = map(lambda x: (x, time.ctime(
-            os.path.getmtime('{}/{}.ics'.format(CALDIR, x)))), group['cals'])
+        group['cals'] = map(name_and_mtime, group['cals'])
 
     output = template.render(groups=groups)
     with open(os.path.join(OUTPUT, "index.html"), "w") as f:
         f.write(output)
 
 
-if __name__ == '__main__':
+def main():
     for d in [OUTPUT, CALDIR]:
         if not os.path.isdir(d):
             os.mkdir(d)
@@ -61,3 +64,7 @@ if __name__ == '__main__':
             executor.submit(get_calendar, STUDENT_PROM, i)
 
     update_index()
+
+
+if __name__ == '__main__':
+    main()

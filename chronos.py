@@ -1,17 +1,17 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python3
 
-import logging
 import argparse
 import re
 import math
 import datetime
 
 import mechanicalsoup
-import icalendar
-
+import ics
+import pytz
 
 ADE_ROOT = 'http://chronos.epita.net'
 PRODID = '-//Laboratoire Assistant <acu@acu.epita.fr>//chronos.py//EN'
+NUMWEEKS = 80
 ROOM_MAPPING = {}
 CLASS_MAPPING = {}
 GROUPS = {
@@ -134,6 +134,7 @@ def find_tree_url(soup):
             return '{}{}'.format(ADE_ROOT, frame.get('src'))
     return None
 
+
 def walk_tree(agent, tree, path):
     """
     Walk the tree following the given path, and return the URL at the leaf
@@ -231,45 +232,45 @@ def retrieve_week_classes(agent, first, numweeks):
 
 
 def ical_output(promo, classes):
-    cal = icalendar.Calendar()
-    cal.add('VERSION', '2.0')
-    cal.add('PRODID', PRODID)
+    cal = ics.Calendar(creator=PRODID)
 
     for c in classes:
-        event = icalendar.Event()
-        event_condensed_name = '{}-{}'.format(c.get('name'), c.get('prof'))
-        event_condensed_name = re.sub(r"[^\w]", "_", event_condensed_name)
-        event['UID'] = 'chronos-{}-{}-{}'.format(
-            promo, c.get('start'), event_condensed_name).replace(' ', '_')
+        name = '{}-{}'.format(c.get('name'), c.get('prof'))
+        name = re.sub(r"[^\w]", "_", name)
+        uid = 'chronos-{}-{}-{}'.format(promo, c.get('start'), name)
+        uid = uid.replace(' ', '_')
 
-        # date the event was created (reset to now)
-        event['DTSTAMP'] = icalendar.vDatetime(datetime.datetime.now())
         summary = '{}'.format(c.get('name'))
         if c.get('prof') != '-':
             summary += ' - {}'.format(c.get('prof'))
         summary += ' ({})'.format(c.get('room'))
-        event['SUMMARY;CHARSET=UTF-8'] = '{}'.format(summary)
-        event['DESCRIPTION'] = '\\n'.join({
+
+        description = '\n'.join({
             "Cours: {}".format(c.get('name')),
             "Prof: {}".format(c.get('prof')),
-            "Salle: {}".format(c.get('room'),
-            "Groupes: {}".format('-'.join(c.get('groups')))),
+            "Salle: {}".format(c.get('room')),
+            "Groupes: {}".format('-'.join(c.get('groups'))),
         }).replace(',', '\\,')
-        event['DTSTART;TZID=Europe/Paris'] = icalendar.vDatetime(c.get('start'))
-        event['DTEND;TZID=Europe/Paris'] = icalendar.vDatetime(c.get('end'))
-        event['LOCATION'] = c.get('room')
-        cal.add_component(event)
+
+        paris = pytz.timezone('Europe/Paris')
+        begin, end = map(paris.localize, [c.get('start'), c.get('end')])
+
+        cal.events.append(ics.Event(
+            name=summary,
+            begin=begin,
+            end=end,
+            uid=uid,
+            description=description,
+            location=c.get('room').capitalize()
+        ))
 
     return cal
 
 
-def chronos(promo, group, numweeks):
+def chronos(promo, group, numweeks=NUMWEEKS):
     agent = mechanicalsoup.Browser()
-    try:
-        path = GROUPS[group]
-    except:
-        logging.fatal("Can't find path for this calendar: {}".format(group))
-        exit(2)
+    path = GROUPS.get(group)
+    assert path is not None, "Can't find path for {} calendar".format(group)
     first = connect_and_select(agent, None, path)
     classes = retrieve_week_classes(agent, first, numweeks)
     return ical_output(promo, classes)
@@ -279,9 +280,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-promo")
     parser.add_argument("-group")
-    parser.add_argument("-numweeks", type=int)
+    parser.add_argument("-numweeks", type=int, default=NUMWEEKS)
     args = parser.parse_args()
-    logging.basicConfig(level=logging.INFO)
-
     cal = chronos(promo=args.promo, group=args.group, numweeks=args.numweeks)
-    print(cal.to_ical().decode())
+    print(str(cal))

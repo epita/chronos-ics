@@ -20,7 +20,8 @@ ASSISTANT_PROM = STUDENT_PROM - 2
 OUTPUT = 'build'
 CALDIR = os.path.join(OUTPUT, 'calendars')
 
-GROUPS = ["GRA", "GRB", "APPING1", "APPING2", "APPING3"]
+GROUPS = ["GRA", "GRB", "APPINGI1", "APPINGI2", "APPINGX1", "APPINGX2",
+          "APPINGX3"]
 MAJORS = ["CSI", "MTI", "GISTRE", "SRS", "SIGL", "SCIA", "TCOM", "GITM"]
 
 

@@ -25,9 +25,11 @@ GROUPS = {
     'GITM': ("'trainee'", 1, 13, 15, 906),
     'GRA': ("'trainee'", 1, 13, 14, 1057),
     'GRB': ("'trainee'", 1, 13, 14, 1058),
-    'APPING1': ("'trainee'", 1, 661, 709),
-    'APPING2': ("'trainee'", 1, 661, 710),
-    'APPING3': ("'trainee'", 1, 661, 689),
+    'APPINGI1': ("'trainee'", 1, 661, 709),
+    'APPINGI2': ("'trainee'", 1, 661, 1492),
+    'APPINGX1': ("'trainee'", 1, 661, 234),
+    'APPINGX2': ("'trainee'", 1, 661, 710),
+    'APPINGX3': ("'trainee'", 1, 661, 689),
 }
 
 

@@ -4,6 +4,7 @@ import os
 import datetime
 import concurrent.futures
 import time
+import logging
 
 import jinja2
 
@@ -54,6 +55,7 @@ def update_index():
 
 
 def main():
+    logging.warning("Started @ {}".format(time.strftime("%c")))
     for d in [OUTPUT, CALDIR]:
         if not os.path.isdir(d):
             os.mkdir(d)
@@ -65,6 +67,7 @@ def main():
             executor.submit(get_calendar, STUDENT_PROM, i)
 
     update_index()
+    logging.warning("Finished @ {}".format(time.strftime("%c")))
 
 
 if __name__ == '__main__':
